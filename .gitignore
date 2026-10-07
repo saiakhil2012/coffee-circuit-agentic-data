@@ -1,0 +1,25 @@
+# Local only: talk material, notes and tooling that never leave this machine
+internal/
+
+# Secrets and local state
+.env
+logs/
+data/generated/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ruff_cache/
+
+# Node
+node_modules/
+
+# OS and editors
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# Local tool settings
+.claude/

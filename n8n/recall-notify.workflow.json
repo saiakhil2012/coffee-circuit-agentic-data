@@ -1,0 +1,61 @@
+{
+  "nodes": [
+    {
+      "id": "5b1e9b8e-0001-4c55-9a11-000000000001",
+      "name": "Quality hold committed",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "7d3f6a52-recall-notify",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "recall-notify",
+        "responseMode": "onReceived",
+        "options": {}
+      }
+    },
+    {
+      "id": "5b1e9b8e-0002-4c55-9a11-000000000002",
+      "name": "Email area managers",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "fromEmail": "quality-agent@coffeecircuit.example",
+        "toEmail": "area-managers@coffeecircuit.example",
+        "subject": "=Quality hold {{ $json.body.hold_id }}: roast lots {{ $json.body.roast_lot_ids.join(', ') }}",
+        "emailFormat": "text",
+        "text": "=A quality hold was approved by {{ $json.body.approved_by }} and committed atomically.\n\nHold:                {{ $json.body.hold_id }}\nGreen-bean batch:    {{ $json.body.green_bean_lot }}\nRoast lots:          {{ $json.body.roast_lot_ids.join(', ') }}\nDeliveries on hold:  {{ $json.body.deliveries_on_hold }}\nCustomers credited:  {{ $json.body.customers_credited }}\nReason:              {{ $json.body.reason }}\n\nNext (SOP-QUALITY step 3): notify Baba Budan Roasters and the estate of batch {{ $json.body.green_bean_lot }}.\n\n- Quality agent, via n8n",
+        "options": {}
+      },
+      "credentials": {
+        "smtp": {
+          "id": "replaced-at-setup",
+          "name": "Mailpit (local SMTP)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Quality hold committed": {
+      "main": [
+        [
+          {
+            "node": "Email area managers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

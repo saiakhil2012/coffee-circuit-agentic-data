@@ -1,0 +1,63 @@
+{
+  "type": "fulltext-index",
+  "name": "feedback_fts",
+  "sourceType": "gocbcore",
+  "sourceName": "store",
+  "planParams": {
+    "indexPartitions": 1,
+    "numReplicas": 0
+  },
+  "params": {
+    "doc_config": {
+      "mode": "scope.collection.type_field",
+      "type_field": "type"
+    },
+    "mapping": {
+      "default_mapping": {
+        "enabled": false
+      },
+      "default_analyzer": "standard",
+      "index_dynamic": false,
+      "store_dynamic": false,
+      "types": {
+        "ops.feedback": {
+          "enabled": true,
+          "dynamic": false,
+          "properties": {
+            "text": {
+              "enabled": true,
+              "dynamic": false,
+              "fields": [
+                {
+                  "name": "text",
+                  "type": "text",
+                  "analyzer": "en",
+                  "index": true,
+                  "store": true,
+                  "include_in_all": true
+                }
+              ]
+            },
+            "status": {
+              "enabled": true,
+              "dynamic": false,
+              "fields": [
+                {
+                  "name": "status",
+                  "type": "text",
+                  "analyzer": "keyword",
+                  "index": true,
+                  "store": true
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "store": {
+      "indexType": "scorch",
+      "segmentVersion": 16
+    }
+  }
+}

@@ -1,0 +1,47 @@
+[project]
+name = "coffee-circuit-agentic-data"
+version = "1.0.0"
+description = "Coffee Circuit: a runnable reference implementation of a data architecture for AI agents"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+keywords = ["agents", "ai", "couchbase", "mcp", "rag", "hybrid-search", "langgraph", "ollama", "data-architecture"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "couchbase>=4.4",
+  "langgraph>=0.6",
+  "langchain-ollama>=0.3",
+  "langchain-mcp-adapters>=0.1.9",
+  "mcp>=1.12",
+  "rich>=13",
+  "requests>=2.32",
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "couchbase-mcp-server>=1.0.1.post1",
+]
+
+[dependency-groups]
+dev = ["ruff>=0.6"]
+
+[project.scripts]
+coffee = "coffee.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["coffee"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["internal"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]  # the formatter owns line length; long user-facing strings stay readable

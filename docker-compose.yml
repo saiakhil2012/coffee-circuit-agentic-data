@@ -1,0 +1,106 @@
+name: coffee-circuit
+
+# The Quality console app + the Couchbase MCP server + Couchbase Server Community Edition + n8n + Mailpit.
+# Ollama runs natively on the host so it can use the Mac's GPU; the app reaches it via host.docker.internal.
+
+services:
+  couchbase:
+    image: couchbase:community-8.0.2@sha256:a4bddafd7816a3a5cba94b62e163c310735ca719412baddd2973aacfe5e2af98
+    container_name: coffee-couchbase
+    hostname: couchbase.coffee.internal   # Couchbase needs a fully qualified node name
+    networks:
+      default:
+        aliases: [couchbase.coffee.internal]
+    ports:
+      - "127.0.0.1:8091-8096:8091-8096"
+      - "127.0.0.1:11210:11210"
+    volumes:
+      - couchbase-data:/opt/couchbase/var
+      - ./setup:/setup:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8091/ui/index.html >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+
+  n8n:
+    image: n8nio/n8n:2.2.1@sha256:ee59276d9d5c7daa97462830cfae12d71cea55adcad705e1756e0c616fcf26b9
+    container_name: coffee-n8n
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      N8N_SECURE_COOKIE: "false"
+      WEBHOOK_URL: http://localhost:5678/
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - ./n8n:/workflows:ro
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    container_name: coffee-mailpit
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+    ports:
+      - "127.0.0.1:8025:8025"   # web inbox
+      - "127.0.0.1:1025:1025"   # SMTP
+
+  mcp:
+    # The open-source Couchbase MCP server, read-only, over streamable HTTP. Same image as the app.
+    build: .
+    image: coffee-circuit-app:local
+    container_name: coffee-mcp
+    command: ["couchbase-mcp-server"]
+    depends_on:
+      couchbase:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8001:8001"   # MCP endpoint: http://localhost:8001/mcp
+    environment:
+      CB_CONNECTION_STRING: couchbase://couchbase.coffee.internal
+      CB_USERNAME: ${CB_USERNAME:-Administrator}
+      CB_PASSWORD: ${CB_PASSWORD:-password}
+      CB_MCP_TRANSPORT: http
+      CB_MCP_HOST: 0.0.0.0
+      CB_MCP_PORT: "8001"
+      CB_MCP_READ_ONLY_MODE: "true"
+      CB_MCP_DISABLED_TOOLS: /app/setup/mcp-disabled-tools.txt
+      CB_MCP_LOG_LEVEL: error
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8001), 2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  app:
+    build: .
+    image: coffee-circuit-app:local
+    container_name: coffee-app
+    depends_on:
+      couchbase:
+        condition: service_healthy
+      mcp:
+        condition: service_healthy
+      n8n:
+        condition: service_started
+    ports:
+      - "127.0.0.1:8000:8000"   # Quality console
+    environment:
+      CB_CONNECTION_STRING: couchbase://couchbase.coffee.internal
+      CB_USERNAME: ${CB_USERNAME:-Administrator}
+      CB_PASSWORD: ${CB_PASSWORD:-password}
+      MCP_URL: http://mcp:8001/mcp
+      OLLAMA_URL: http://host.docker.internal:11434
+      CHAT_MODEL: ${CHAT_MODEL:-qwen3:8b}
+      EMBED_MODEL: ${EMBED_MODEL:-nomic-embed-text}
+      N8N_NOTIFY_URL: http://n8n:5678/webhook/recall-notify
+      MAILPIT_URL: http://mailpit:8025
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # Linux; Docker Desktop provides it already
+
+volumes:
+  couchbase-data: {}
+  n8n-data: {}

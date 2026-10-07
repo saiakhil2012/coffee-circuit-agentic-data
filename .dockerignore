@@ -1,0 +1,10 @@
+.git
+.venv
+.env
+.claude
+internal
+logs
+data/generated
+docs
+**/__pycache__
+**/node_modules

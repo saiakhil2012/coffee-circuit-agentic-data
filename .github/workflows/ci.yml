@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev
+      - name: Lint
+        run: uv run ruff check .
+      - name: Format
+        run: uv run ruff format --check .
+      - name: Compile
+        run: uv run python -m compileall -q coffee data ingest setup tests
+      - name: Data generator is deterministic
+        run: |
+          uv run python data/generate.py
+          sha256sum data/generated/* > /tmp/first.txt
+          uv run python data/generate.py
+          sha256sum -c /tmp/first.txt

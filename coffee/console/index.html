@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coffee Circuit Quality Console</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="rail" aria-label="Feedback inbox">
+    <div class="brand"><b>Coffee <span>Circuit</span></b><small>Quality console</small></div>
+    <h2><span>Feedback</span><span id="inboxCount"></span></h2>
+    <ul class="inbox" id="inbox"></ul>
+    <div class="rail-foot"><span class="avatar" aria-hidden="true" id="avatar">AK</span><div><b id="who">Akhil</b><span id="role">Quality lead</span></div></div>
+  </aside>
+
+  <main class="main">
+    <header class="head">
+      <h1 id="title">Quality incidents</h1>
+      <span class="id" id="incId" hidden>INC-1007</span>
+      <span class="status" id="status" hidden></span>
+      <span class="spacer"></span>
+      <button class="ghost" id="chipsBtn" type="button" aria-pressed="false" aria-controls="chips">Suggestions</button>
+      <button class="ghost" id="drawerBtn" type="button" aria-pressed="false" aria-controls="drawer">Agent activity · <span id="stepCount">0</span></button>
+      <button class="ghost" id="resetBtn" type="button">Reset data</button>
+    </header>
+
+    <div class="feed" id="feed"><div class="feed-inner" id="feedInner"></div></div>
+
+    <div class="composer">
+      <div class="composer-inner">
+        <div class="chips" id="chips" aria-label="Suggested questions" hidden></div>
+        <form class="ask" id="askForm">
+          <label for="askInput" class="sr-only">Ask the quality agent</label>
+          <input id="askInput" autocomplete="off" placeholder="Ask the quality agent about this incident" disabled>
+          <button type="submit" id="askBtn" disabled>Ask</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <aside class="drawer" id="drawer" hidden aria-label="Agent activity">
+    <h2>Agent activity</h2>
+    <p class="empty" id="stepsEmpty">Each tool the agent calls, and the query behind it, appears here.</p>
+    <ol class="steps" id="steps"></ol>
+  </aside>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
